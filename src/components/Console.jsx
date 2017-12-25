@@ -8,14 +8,17 @@ import ConsoleInput from './ConsoleInput';
 
 export default function Console({
   currentProjectKey,
+  currentCompiledProjectKey,
   history,
   isEnabled,
   isOpen,
   isTextSizeLarge,
+  showingErrors,
+  onClearConsoleEntries,
   onInput,
   onToggleVisible,
 }) {
-  if (!isEnabled) {
+  if (showingErrors || !isEnabled) {
     return null;
   }
 
@@ -27,10 +30,14 @@ export default function Console({
         }
       >
         <ConsoleInput isTextSizeLarge={isTextSizeLarge} onInput={onInput} />
-        {history.map((entry, key) => (
+        {history.map((entry, key) => {
+          const isActive =
+            currentCompiledProjectKey === entry.evaluatedByCompiledProjectKey;
+          return (
           // eslint-disable-next-line react/no-array-index-key
-          <ConsoleEntry entry={entry} key={key} />
-        )).valueSeq().reverse()}
+            <ConsoleEntry entry={entry} isActive={isActive} key={key} />
+          );
+        }).valueSeq().reverse()}
       </div>
     </div>
   );
@@ -43,8 +50,19 @@ export default function Console({
         className="label console__label"
         onClick={partial(onToggleVisible, currentProjectKey)}
       >
-        Console
-        <span className="console__chevron u__icon">{chevron}</span>
+        <div>
+          Console
+          <span className="console__chevron u__icon">{chevron}</span>
+        </div>
+        <div
+          className="console__button console__button_clear u__icon"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClearConsoleEntries();
+          }}
+        >
+          &#xf05e;
+        </div>
       </div>
       {isOpen ? console : null}
     </div>
@@ -52,15 +70,19 @@ export default function Console({
 }
 
 Console.propTypes = {
+  currentCompiledProjectKey: PropTypes.number,
   currentProjectKey: PropTypes.string.isRequired,
   history: ImmutablePropTypes.iterable.isRequired,
   isEnabled: PropTypes.bool.isRequired,
   isOpen: PropTypes.bool.isRequired,
   isTextSizeLarge: PropTypes.bool,
+  showingErrors: PropTypes.bool.isRequired,
+  onClearConsoleEntries: PropTypes.func.isRequired,
   onInput: PropTypes.func.isRequired,
   onToggleVisible: PropTypes.func.isRequired,
 };
 
 Console.defaultProps = {
+  currentCompiledProjectKey: null,
   isTextSizeLarge: false,
 };

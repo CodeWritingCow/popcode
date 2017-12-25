@@ -7,6 +7,7 @@ import bindAll from 'lodash/bindAll';
 import {t} from 'i18next';
 import normalizeError from '../util/normalizeError';
 import {sourceDelimiter} from '../util/compileProject';
+import {CompiledProject as CompiledProjectRecord} from '../records';
 
 const sandboxOptions = [
   'allow-forms',
@@ -29,7 +30,7 @@ class PreviewFrame extends React.Component {
 
     if (this._channel && isActive) {
       for (const [key, {expression}] of newProps.consoleEntries) {
-        if (!previousConsoleEntries.has(key)) {
+        if (!previousConsoleEntries.has(key) && expression) {
           this._evaluateConsoleExpression(key, expression);
         }
       }
@@ -46,16 +47,25 @@ class PreviewFrame extends React.Component {
       method: 'evaluateExpression',
       params: expression,
       success: (result) => {
-        this.props.onConsoleValue(key, JSON.stringify(result));
+        this.props.onConsoleValue(
+          key,
+          JSON.stringify(result),
+          this.props.compiledProject.compiledProjectKey,
+        );
       },
       error: (name, message) => {
-        this.props.onConsoleError(key, name, message);
+        this.props.onConsoleError(
+          key,
+          name,
+          message,
+          this.props.compiledProject.compiledProjectKey,
+        );
       },
     });
   }
 
   _runtimeErrorLineOffset() {
-    const firstSourceLine = this.props.src.
+    const firstSourceLine = this.props.compiledProject.source.
       split('\n').indexOf(sourceDelimiter) + 2;
 
     return firstSourceLine - 1;
@@ -100,6 +110,12 @@ class PreviewFrame extends React.Component {
     });
   }
 
+  _handleConsoleLog(consoleArgs) {
+    const output = consoleArgs.map(arg => JSON.stringify(arg)).join(' ');
+    const {compiledProjectKey} = this.props.compiledProject;
+    this.props.onConsoleLog(output, compiledProjectKey);
+  }
+
   _attachToFrame(frame) {
     this._frame = frame;
 
@@ -122,10 +138,13 @@ class PreviewFrame extends React.Component {
     this._channel.bind('error', (_trans, params) => {
       this._handleErrorMessage(params);
     });
+    this._channel.bind('log', (_trans, params) => {
+      this._handleConsoleLog(params.args);
+    });
   }
 
   render() {
-    const {src} = this.props;
+    const {source} = this.props.compiledProject;
     return (
       <div className="preview__frame-container">
         <iframe
@@ -133,7 +152,7 @@ class PreviewFrame extends React.Component {
           name={this._frameName}
           ref={this._attachToFrame}
           sandbox={sandboxOptions}
-          srcDoc={src}
+          srcDoc={source}
         />
       </div>
     );
@@ -141,10 +160,11 @@ class PreviewFrame extends React.Component {
 }
 
 PreviewFrame.propTypes = {
+  compiledProject: PropTypes.instanceOf(CompiledProjectRecord).isRequired,
   consoleEntries: ImmutablePropTypes.iterable.isRequired,
   isActive: PropTypes.bool.isRequired,
-  src: PropTypes.string.isRequired,
   onConsoleError: PropTypes.func.isRequired,
+  onConsoleLog: PropTypes.func.isRequired,
   onConsoleValue: PropTypes.func.isRequired,
   onRuntimeError: PropTypes.func.isRequired,
 };
