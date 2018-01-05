@@ -15,11 +15,14 @@ import getHiddenUIComponents from './getHiddenUIComponents';
 import getNotifications from './getNotifications';
 import getOpenTopBarMenu from './getOpenTopBarMenu';
 import getProject from './getProject';
+import getRequestedFocusedLine from './getRequestedFocusedLine';
 import isCurrentlyValidating from './isCurrentlyValidating';
 import isCurrentProjectSyntacticallyValid
   from './isCurrentProjectSyntacticallyValid';
 import isExperimental from './isExperimental';
 import isGistExportInProgress from './isGistExportInProgress';
+import isRepoExportInProgress from './isRepoExportInProgress';
+import isClassroomExportInProgress from './isClassroomExportInProgress';
 import isSnapshotInProgress from './isSnapshotInProgress';
 import isTextSizeLarge from './isTextSizeLarge';
 import isUserAuthenticated from './isUserAuthenticated';
@@ -44,10 +47,13 @@ export {
   getNotifications,
   getOpenTopBarMenu,
   getProject,
+  getRequestedFocusedLine,
   isCurrentlyValidating,
   isCurrentProjectSyntacticallyValid,
   isExperimental,
   isGistExportInProgress,
+  isRepoExportInProgress,
+  isClassroomExportInProgress,
   isSnapshotInProgress,
   isTextSizeLarge,
   isUserAuthenticated,
