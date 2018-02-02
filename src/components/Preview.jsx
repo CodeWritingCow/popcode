@@ -45,6 +45,10 @@ export default function Preview({
         {title}
         <span
           className="preview__button preview__button_reset u__icon"
+          // onClick={onRefreshClick}
+        >&#xf078;</span>        
+        <span
+          className="preview__button preview__button_reset u__icon"
           onClick={onRefreshClick}
         >&#xf021;</span>
       </div>
