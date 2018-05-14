@@ -1,11 +1,10 @@
-import get from 'lodash/get';
-import GitHub from 'github-api';
-import isEmpty from 'lodash/isEmpty';
-import trim from 'lodash/trim';
+import get from 'lodash-es/get';
+import isEmpty from 'lodash-es/isEmpty';
+import trim from 'lodash-es/trim';
+import retryingFailedImports from '../util/retryingFailedImports';
 import performWithRetries from '../util/performWithRetries';
 import compileProject from '../util/compileProject';
 
-const anonymousGithub = new GitHub({});
 const COMMIT_MESSAGE = 'Created using Popcode: https://popcode.org';
 const MASTER = 'master';
 const GH_PAGES = 'gh-pages';
@@ -27,7 +26,7 @@ function normalizeTitle(title) {
 }
 
 export async function createRepoFromProject(project, user) {
-  const github = clientForUser(user);
+  const github = await clientForUser(user);
   const preview = await compileProject(project);
   const title = normalizeTitle(preview.title);
 
@@ -60,7 +59,7 @@ export async function createRepoFromProject(project, user) {
 }
 
 export async function createGistFromProject(project, user) {
-  const github = clientForUser(user);
+  const github = await clientForUser(user);
 
   const gist = buildGistFromProject(project);
   if (isEmpty(gist.files)) {
@@ -70,15 +69,11 @@ export async function createGistFromProject(project, user) {
   const response =
     await performWithRetryNetworkErrors(() => github.getGist().create(gist));
 
-  const gistData = response.data;
-  if (canUpdateGist(user)) {
-    return updateGistWithImportUrl(github, gistData);
-  }
-  return gistData;
+  return updateGistWithImportUrl(github, response.data);
 }
 
 export async function loadGistFromId(gistId, user) {
-  const github = clientForUser(user);
+  const github = await clientForUser(user);
   const gist = github.getGist(gistId);
   const response =
     await performWithRetryNetworkErrors(() => gist.read(), {retries: 3});
@@ -249,23 +244,17 @@ async function updateRepoDescription(github, userName, repoName) {
   );
 }
 
-function githubWithAccessToken(token) {
+async function githubWithAccessToken(token) {
+  const {'default': GitHub} = await retryingFailedImports(() =>
+    import(
+      /* webpackChunkName: 'mainAsync' */
+      'github-api',
+    ),
+  );
   return new GitHub({auth: 'oauth', token});
 }
 
-function getGithubToken(user) {
-  return get(user, ['accessTokens', 'github.com']);
-}
-
-function clientForUser(user) {
-  const githubToken = getGithubToken(user);
-  if (githubToken) {
-    return githubWithAccessToken(githubToken);
-  }
-
-  return anonymousGithub;
-}
-
-function canUpdateGist(user) {
-  return Boolean(getGithubToken(user));
+async function clientForUser(user) {
+  const githubToken = get(user, ['accessTokens', 'github.com']);
+  return githubWithAccessToken(githubToken);
 }

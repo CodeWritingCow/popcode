@@ -1,9 +1,10 @@
-import castArray from 'lodash/castArray';
-import compact from 'lodash/compact';
-import flatMap from 'lodash/flatMap';
-import isEmpty from 'lodash/isEmpty';
-import uniq from 'lodash/uniq';
-import loopBreaker from 'loop-breaker';
+import castArray from 'lodash-es/castArray';
+import compact from 'lodash-es/compact';
+import flatMap from 'lodash-es/flatMap';
+import isEmpty from 'lodash-es/isEmpty';
+import map from 'lodash-es/map';
+import trim from 'lodash-es/trim';
+import uniq from 'lodash-es/uniq';
 import config from '../config';
 import retryingFailedImports from '../util/retryingFailedImports';
 
@@ -18,8 +19,12 @@ async function downloadScript() {
     return '';
   }
 
-  const response = await fetch(document.getElementById('preview-bundle').src);
-  return response.text();
+  const responses = await Promise.all(
+    map(document.querySelectorAll('.preview-bundle'), el => fetch(el.src)),
+  );
+  const scripts =
+    await Promise.all(responses.map(response => response.text()));
+  return scripts.join('\n');
 }
 
 function constructDocument(project) {
@@ -90,7 +95,8 @@ function attachJavascriptLibrary(doc, javascript) {
   const scriptTag = doc.createElement('script');
   const javascriptText = String(javascript);
   scriptTag.innerHTML = javascriptText.replace(/<\/script>/g, '<\\/script>');
-  const [firstScriptTag] = doc.scripts;
+  // eslint-disable-next-line prefer-destructuring
+  const firstScriptTag = doc.scripts[0];
   if (firstScriptTag) {
     firstScriptTag.parentNode.insertBefore(scriptTag, firstScriptTag);
   } else {
@@ -126,7 +132,8 @@ function addBase(doc) {
   const {head} = doc;
   const baseTag = doc.createElement('base');
   baseTag.target = '_top';
-  const [firstChild] = head.childNodes;
+  // eslint-disable-next-line prefer-destructuring
+  const firstChild = head.childNodes[0];
   if (firstChild) {
     head.insertBefore(baseTag, firstChild);
   } else {
@@ -147,9 +154,23 @@ async function addPreviewSupportScript(doc) {
   doc.head.appendChild(scriptTag);
 }
 
-function addJavascript(doc, project, {breakLoops = false}) {
-  let source = `\n${sourceDelimiter}\n${project.sources.javascript}`;
+async function addJavascript(
+  doc,
+  {sources: {javascript}},
+  {breakLoops = false},
+) {
+  if (trim(javascript).length === 0) {
+    return;
+  }
+
+  let source = `\n${sourceDelimiter}\n${javascript}`;
   if (breakLoops) {
+    const {'default': loopBreaker} = await retryingFailedImports(
+      () => import(
+        /* webpackChunkName: 'mainAsync' */
+        'loop-breaker',
+      ),
+    );
     source = loopBreaker(source);
   }
   const scriptTag = doc.createElement('script');
@@ -177,7 +198,7 @@ export default async function compileProject(
   if (isInlinePreview) {
     await addPreviewSupportScript(doc);
   }
-  addJavascript(doc, project, {breakLoops: isInlinePreview});
+  await addJavascript(doc, project, {breakLoops: isInlinePreview});
 
   return {
     title: (doc.title || '').trim(),

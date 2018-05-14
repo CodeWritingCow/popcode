@@ -9,6 +9,7 @@ import getCurrentProjectKey from './getCurrentProjectKey';
 import getCurrentUser from './getCurrentUser';
 import getCurrentUserId from './getCurrentUserId';
 import getCurrentValidationState from './getCurrentValidationState';
+import getEditorsFlex from './getEditorsFlex';
 import getEnabledLibraries from './getEnabledLibraries';
 import getErrors from './getErrors';
 import getHiddenUIComponents from './getHiddenUIComponents';
@@ -19,6 +20,7 @@ import getRequestedFocusedLine from './getRequestedFocusedLine';
 import isCurrentlyValidating from './isCurrentlyValidating';
 import isCurrentProjectSyntacticallyValid
   from './isCurrentProjectSyntacticallyValid';
+import isEditingInstructions from './isEditingInstructions';
 import isExperimental from './isExperimental';
 import isGistExportInProgress from './isGistExportInProgress';
 import isRepoExportInProgress from './isRepoExportInProgress';
@@ -41,6 +43,7 @@ export {
   getCurrentUser,
   getCurrentUserId,
   getCurrentValidationState,
+  getEditorsFlex,
   getEnabledLibraries,
   getErrors,
   getHiddenUIComponents,
@@ -50,6 +53,7 @@ export {
   getRequestedFocusedLine,
   isCurrentlyValidating,
   isCurrentProjectSyntacticallyValid,
+  isEditingInstructions,
   isExperimental,
   isGistExportInProgress,
   isRepoExportInProgress,

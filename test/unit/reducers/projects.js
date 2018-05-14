@@ -1,8 +1,8 @@
-import assign from 'lodash/assign';
+import assign from 'lodash-es/assign';
 import test from 'tape';
-import reduce from 'lodash/reduce';
-import tap from 'lodash/tap';
-import partial from 'lodash/partial';
+import reduce from 'lodash-es/reduce';
+import tap from 'lodash-es/tap';
+import partial from 'lodash-es/partial';
 import Immutable from 'immutable';
 import reducerTest from '../../helpers/reducerTest';
 import {projects as states} from '../../helpers/referenceStates';
@@ -21,6 +21,7 @@ import {
   unhideComponent,
   toggleComponent,
   updateProjectSource,
+  updateProjectInstructions,
 } from '../../../src/actions/projects';
 import {
   snapshotImported,
@@ -62,6 +63,17 @@ test('updateProjectSource', reducerTest(
     update(
       projectKey,
       editedProject => editedProject.setIn(['sources', 'css'], css),
+    ),
+));
+
+test('updateProjectInstructions', reducerTest(
+  reducer,
+  initProjects({[projectKey]: false}),
+  partial(updateProjectInstructions, projectKey, '# Instructions', now),
+  initProjects({[projectKey]: true}).
+    update(
+      projectKey,
+      editedProject => editedProject.set('instructions', '# Instructions'),
     ),
 ));
 

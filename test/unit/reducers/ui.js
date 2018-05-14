@@ -1,13 +1,14 @@
 import test from 'tape';
 import Immutable from 'immutable';
-import tap from 'lodash/tap';
-import partial from 'lodash/partial';
+import tap from 'lodash-es/tap';
+import partial from 'lodash-es/partial';
 import reducerTest from '../../helpers/reducerTest';
 import reducer, {DEFAULT_WORKSPACE} from '../../../src/reducers/ui';
 import {
   gistNotFound,
   gistImportError,
   updateProjectSource,
+  updateProjectInstructions,
 } from '../../../src/actions/projects';
 import {
   dragColumnDivider,
@@ -18,6 +19,8 @@ import {
   notificationTriggered,
   userDismissedNotification,
   toggleTopBarMenu,
+  startEditingInstructions,
+  cancelEditingInstructions,
 } from '../../../src/actions/ui';
 import {
   snapshotCreated,
@@ -123,6 +126,27 @@ test('dragRowDivider', (t) => {
     ),
   ));
 });
+
+test('startEditingInstructions', reducerTest(
+  reducer,
+  initialState,
+  startEditingInstructions,
+  initialState.setIn(['workspace', 'isEditingInstructions'], true),
+));
+
+test('startEditingInstructions', reducerTest(
+  reducer,
+  initialState.setIn(['workspace', 'isEditingInstructions'], true),
+  cancelEditingInstructions,
+  initialState,
+));
+
+test('updateProjectInstructions', reducerTest(
+  reducer,
+  initialState.setIn(['workspace', 'isEditingInstructions'], true),
+  updateProjectInstructions,
+  initialState,
+));
 
 test('gistNotFound', reducerTest(
   reducer,

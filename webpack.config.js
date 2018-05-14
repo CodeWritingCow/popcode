@@ -6,19 +6,15 @@ const fs = require('fs');
 const path = require('path');
 const OfflinePlugin = require('offline-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
-const MD5ChunkHash = require('webpack-chunk-hash');
-const InlineChunkManifestHtmlPlugin =
-  require('inline-chunk-manifest-html-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
+const StatsPlugin = require('stats-webpack-plugin');
+const VisualizerPlugin = require('webpack-visualizer-plugin');
+const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const webpack = require('webpack');
-const escapeRegExp = require('lodash/escapeRegExp');
-const startsWith = require('lodash/startsWith');
-const map = require('lodash/map');
-const includes = require('lodash/includes');
+const escapeRegExp = require('lodash.escaperegexp');
 const git = require('git-rev-sync');
 const babel = require('babel-core');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const babelLoaderVersion =
   require('./node_modules/babel-loader/package.json').version;
 
@@ -58,28 +54,17 @@ function matchModule(modulePath) {
     modulePattern.test(filePath) && !moduleDependencyPattern.test(filePath);
 }
 
-function directoryContentsExcept(directory, exceptions) {
-  const fullExceptions = map(
-    exceptions,
-    exception => path.resolve(directory, exception),
-  );
-
-  return filePath =>
-    startsWith(filePath, path.resolve(directory)) &&
-      !includes(fullExceptions, filePath);
-}
-
-module.exports = (env = 'development') => {
+module.exports = (env = process.env.NODE_ENV || 'development') => {
   const isProduction = env === 'production';
   const isTest = env === 'test';
+  const shouldProfileBuild = Boolean(process.env.PROFILE_BUILD);
 
   const plugins = [
     new webpack.EnvironmentPlugin({
       FIREBASE_APP: 'popcode-development',
       FIREBASE_API_KEY: 'AIzaSyCHlo2RhOkRFFh48g779YSZrLwKjoyCcws',
       GIT_REVISION: git.short(),
-      LOG_REDUX_ACTIONS: 'false',
-      NODE_ENV: 'development',
+      NODE_ENV: env,
       WARN_ON_DROPPED_ERRORS: 'false',
       GOOGLE_ANALYTICS_TRACKING_ID: 'UA-90316486-2',
     }),
@@ -87,103 +72,108 @@ module.exports = (env = 'development') => {
       exclude: /node_modules/,
       failOnError: true,
     }),
-    new OfflinePlugin({
-      caches: {
-        main: [':rest:'],
-        additional: ['mainAsync*.js', 'previewLibraries*.js'],
-      },
-      safeToUseOptionalCaches: true,
-      publicPath: '/',
-      responseStrategy: 'network-first',
-      externals: [
-        'index.html',
-        'application.css',
-        'fonts/Roboto-Regular-webfont.woff',
-        'fonts/Roboto-Regular-webfont.ttf',
-        'fonts/Roboto-Regular-webfont.eot',
-        'fonts/Roboto-Bold-webfont.woff',
-        'fonts/Roboto-Bold-webfont.ttf',
-        'fonts/Roboto-Bold-webfont.eot',
-        'fonts/inconsolata-regular.woff2',
-        'fonts/inconsolata-regular.woff',
-        'fonts/inconsolata-regular.ttf',
-        'fonts/inconsolata-regular.eot',
-        'fonts/fontawesome-webfont.woff2',
-        'fonts/fontawesome-webfont.woff',
-        'fonts/fontawesome-webfont.ttf',
-        'fonts/fontawesome-webfont.eot',
-        'images/pop/thinking.svg',
-      ],
-      ServiceWorker: {navigateFallbackURL: '/'},
-    }),
-    isProduction ?
-      new webpack.HashedModuleIdsPlugin() :
-      new webpack.NamedModulesPlugin(),
-    new MD5ChunkHash(),
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/html/index.html'),
-      chunksSortMode: 'dependency',
-    }),
-    new ScriptExtHtmlWebpackPlugin({
-      defaultAttribute: 'defer',
-      custom: [
-        {
-          test: /^preview/,
-          attribute: 'type',
-          value: 'ref',
-        },
-        {
-          test: /^preview/,
-          attribute: 'id',
-          value: 'preview-bundle',
-        },
-      ],
-    }),
+    new webpack.NormalModuleReplacementPlugin(
+      /node_modules\/stylelint\/lib\/requireRule.js$/,
+      path.resolve(__dirname, 'src/patches/stylelint/lib/requireRule.js'),
+    ),
   ];
 
-  if (isTest) {
-    plugins.push(new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1}));
-  } else {
+  if (shouldProfileBuild) {
     plugins.push(
-      new InlineChunkManifestHtmlPlugin(),
-      new webpack.optimize.CommonsChunkPlugin({
-        name: 'vendor',
-        chunks: ['main'],
-        minChunks({context}) {
-          if (!context) {
-            return false;
-          }
-          const isNodeModule = context.indexOf('node_modules') !== -1;
-          return isNodeModule;
-        },
+      new StatsPlugin('profile/stats.json'),
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'static',
+        reportFilename: 'profile/bundle-analyzer.html',
       }),
-      new webpack.optimize.CommonsChunkPlugin({
-        name: 'manifest',
-        chunks: ['main'],
+      new VisualizerPlugin({
+        filename: 'profile/webpack-visualizer.html',
       }),
     );
   }
 
+  let devtool;
   if (isProduction) {
-    plugins.push(new UglifyJsPlugin({
-      sourceMap: true,
-      uglifyOptions: {
-        compress: {warnings: false},
-        output: {comments: false},
-      },
-    }));
+    devtool = 'source-map';
+  } else if (isTest) {
+    devtool = 'inline-source-map';
+  } else {
+    devtool = 'eval';
+  }
+
+  if (!isTest) {
+    plugins.push(
+      new OfflinePlugin({
+        caches: {
+          main: [/(?:^|~)(?:main|preview)[-.~]/, ':externals:'],
+          additional: [':rest:'],
+        },
+        safeToUseOptionalCaches: isProduction,
+        AppCache: {
+          caches: ['main', 'additional', 'optional'],
+        },
+        publicPath: '/',
+        responseStrategy: 'network-first',
+        externals: [
+          '/',
+          'application.css',
+          'fonts/Roboto-Regular-webfont.woff',
+          'fonts/Roboto-Regular-webfont.ttf',
+          'fonts/Roboto-Regular-webfont.eot',
+          'fonts/Roboto-Bold-webfont.woff',
+          'fonts/Roboto-Bold-webfont.ttf',
+          'fonts/Roboto-Bold-webfont.eot',
+          'fonts/inconsolata-regular.woff2',
+          'fonts/inconsolata-regular.woff',
+          'fonts/inconsolata-regular.ttf',
+          'fonts/inconsolata-regular.eot',
+          'fonts/fontawesome-webfont.woff2',
+          'fonts/fontawesome-webfont.woff',
+          'fonts/fontawesome-webfont.ttf',
+          'fonts/fontawesome-webfont.eot',
+          'images/pop/thinking.svg',
+        ],
+      }),
+      new HtmlWebpackPlugin({
+        template: path.resolve(__dirname, 'src/html/index.html'),
+        chunksSortMode: 'dependency',
+      }),
+      new ScriptExtHtmlWebpackPlugin({
+        defaultAttribute: 'defer',
+        prefetch: {
+          chunks: 'async',
+          test: /\.js$/,
+        },
+        custom: [
+          {
+            test: /^(?!(|.*~)main[.~-])/,
+            attribute: 'type',
+            value: 'ref',
+          },
+          {
+            test: /(^|~)preview[.~-]/,
+            attribute: 'class',
+            value: 'preview-bundle',
+          },
+        ],
+      }),
+    );
   }
 
   return {
-    entry: {
+    mode: isProduction ? 'production' : 'development',
+    entry: isTest ? undefined : {
       main: './src/application.js',
       preview: './src/preview.js',
+    },
+    optimization: {
+      splitChunks: isTest ? false : {chunks: 'all'},
     },
     output: {
       path: path.resolve(__dirname, './dist'),
       filename: isProduction ? '[name].[chunkhash].js' : '[name].js',
       chunkFilename: isProduction ? '[name].[chunkhash].js' : '[name].js',
     },
+    profile: shouldProfileBuild,
     module: {
       rules: [
         {
@@ -201,10 +191,6 @@ module.exports = (env = 'development') => {
           test: /\.js$/,
           use: ['source-map-loader'],
           enforce: 'pre',
-        },
-        {
-          test: /\.json$/,
-          use: ['json-loader'],
         },
         {
           include: [
@@ -272,27 +258,14 @@ module.exports = (env = 'development') => {
         {
           test: /\.js$/,
           include: [
-            path.resolve(
-              __dirname,
-              'node_modules/stylelint/lib/utils/isAutoprefixable',
-            ),
-          ],
-          use: [
-            {
-              loader: 'substitute-loader',
-              options: {content: '() => false'},
-            },
-          ],
-        },
-        {
-          test: /\.js$/,
-          include: [
             matchModule('ansi-styles'),
+            matchModule('ast-types'),
             matchModule('chalk'),
             matchModule('lodash-es'),
+            matchModule('postcss-html'),
+            matchModule('recast'),
             matchModule('redux'),
             matchModule('stylelint'),
-            matchModule('postcss-html'),
           ],
           use: {loader: 'babel-loader', options: babelrc},
         },
@@ -314,20 +287,8 @@ module.exports = (env = 'development') => {
             matchModule('postcss-scss'),
             matchModule('postcss-less'),
             matchModule('sugarss'),
-            matchModule('stylelint/lib/dynamicRequire'),
             matchModule('css/lib/stringify/source-map-support'),
           ],
-          use: ['null-loader'],
-        },
-        {
-          test: /\.js$/,
-          include: directoryContentsExcept(
-            'node_modules/stylelint/lib/rules',
-            [
-              'index.js',
-              'declaration-block-trailing-semicolon/index.js',
-            ],
-          ),
           use: ['null-loader'],
         },
         {
@@ -350,8 +311,8 @@ module.exports = (env = 'development') => {
         'github-api': 'github-api/dist/components',
         'html-inspector$': 'html-inspector/html-inspector.js',
       },
-      extensions: ['.js', '.jsx', '.json'],
+      extensions: ['.mjs', '.js', '.jsx', '.json'],
     },
-    devtool: isTest ? 'inline-source-map' : 'source-map',
+    devtool,
   };
 };

@@ -7,9 +7,9 @@ import {
   takeEvery,
   throttle,
 } from 'redux-saga/effects';
-import isNull from 'lodash/isNull';
-import isString from 'lodash/isString';
-import get from 'lodash/get';
+import isNull from 'lodash-es/isNull';
+import isString from 'lodash-es/isString';
+import get from 'lodash-es/get';
 import {
   gistImported,
   gistImportError,
@@ -110,7 +110,10 @@ export default function* () {
     takeEvery('APPLICATION_LOADED', applicationLoaded),
     takeEvery('CREATE_PROJECT', createProject),
     takeEvery('CHANGE_CURRENT_PROJECT', changeCurrentProject),
-    throttle(500, 'UPDATE_PROJECT_SOURCE', updateProjectSource),
+    throttle(500, [
+      'UPDATE_PROJECT_SOURCE',
+      'UPDATE_PROJECT_INSTRUCTIONS',
+    ], updateProjectSource),
     takeEvery('USER_AUTHENTICATED', userAuthenticated),
     takeEvery('TOGGLE_LIBRARY', toggleLibrary),
   ]);

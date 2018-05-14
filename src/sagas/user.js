@@ -1,8 +1,8 @@
-import Bugsnag from '../util/Bugsnag';
-import isError from 'lodash/isError';
-import isString from 'lodash/isString';
+import {bugsnagClient} from '../util/bugsnag';
+import isError from 'lodash-es/isError';
+import isString from 'lodash-es/isString';
 import {all, call, put, take, takeEvery} from 'redux-saga/effects';
-import isNil from 'lodash/isNil';
+import isNil from 'lodash-es/isNil';
 import {notificationTriggered} from '../actions/ui';
 import {userAuthenticated, userLoggedOut} from '../actions/user';
 import loginState from '../channels/loginState';
@@ -81,9 +81,9 @@ export function* logIn() {
         yield put(notificationTriggered('auth-error'));
 
         if (isError(e)) {
-          yield call([Bugsnag, 'notifyException'], e, e.code);
+          yield call([bugsnagClient, 'notify'], e, {metaData: {code: e.code}});
         } else if (isString(e)) {
-          yield call([Bugsnag, 'notifyException'], new Error(e));
+          yield call([bugsnagClient, 'notify'], new Error(e));
         }
         break;
     }

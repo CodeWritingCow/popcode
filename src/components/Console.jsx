@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import partial from 'lodash/partial';
+import partial from 'lodash-es/partial';
 import React from 'react';
 import PropTypes from 'prop-types';
 import ImmutablePropTypes from 'react-immutable-proptypes';
@@ -22,11 +22,7 @@ export default function Console({
 }) {
   const console = (
     <div
-      className={classnames(
-        'console__scroll-container',
-        'output__item',
-        {u__hidden: isHidden},
-      )}
+      className="console__scroll-container output__item"
       onClick={onConsoleClicked}
     >
       <div
@@ -55,7 +51,12 @@ export default function Console({
   const chevron = isOpen ? ' \uf078' : ' \uf077';
 
   return (
-    <div className="console">
+    <div
+      className={classnames(
+        'console',
+        {u__hidden: isHidden},
+      )}
+    >
       <div
         className="label console__label"
         onClick={partial(onToggleVisible, currentProjectKey)}

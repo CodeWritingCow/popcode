@@ -1,12 +1,12 @@
 import Immutable from 'immutable';
-import assign from 'lodash/assign';
-import isNil from 'lodash/isNil';
-import filter from 'lodash/filter';
-import find from 'lodash/find';
-import get from 'lodash/get';
-import map from 'lodash/map';
-import sortBy from 'lodash/sortBy';
-import values from 'lodash/values';
+import assign from 'lodash-es/assign';
+import isNil from 'lodash-es/isNil';
+import filter from 'lodash-es/filter';
+import find from 'lodash-es/find';
+import get from 'lodash-es/get';
+import map from 'lodash-es/map';
+import sortBy from 'lodash-es/sortBy';
+import values from 'lodash-es/values';
 
 import {Project} from '../records';
 import {isPristineProject} from '../util/projectUtils';
@@ -115,6 +115,15 @@ export default function reduceProjects(stateIn, action) {
         action.meta.timestamp,
       );
 
+    case 'UPDATE_PROJECT_INSTRUCTIONS':
+      return state.setIn(
+        [action.payload.projectKey, 'instructions'],
+        action.payload.newValue,
+      ).setIn(
+        [action.payload.projectKey, 'updatedAt'],
+        action.meta.timestamp,
+      );
+
     case 'PROJECT_CREATED':
       return removePristineExcept(state, action.payload.projectKey).set(
         action.payload.projectKey,
@@ -189,6 +198,14 @@ export default function reduceProjects(stateIn, action) {
         },
       ).setIn(
         [action.payload.projectKey, 'updatedAt'],
+        action.meta.timestamp,
+      );
+
+    case 'START_EDITING_INSTRUCTIONS':
+      return unhideComponent(
+        state,
+        action.payload.projectKey,
+        'instructions',
         action.meta.timestamp,
       );
 

@@ -2,22 +2,24 @@
 
 import classnames from 'classnames';
 import {connect} from 'react-redux';
-import constant from 'lodash/constant';
+import constant from 'lodash-es/constant';
+import noop from 'lodash-es/noop';
 import onClickOutside from 'react-onclickoutside';
 import preventClickthrough from 'react-prevent-clickthrough';
-import property from 'lodash/property';
+import property from 'lodash-es/property';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {closeTopBarMenu, toggleTopBarMenu} from '../../actions';
 import {getOpenTopBarMenu} from '../../selectors';
 
-export function MenuItem({children, isEnabled, onClick}) {
+export function MenuItem({children, isActive, isDisabled, onClick}) {
   return (
     <div
-      className={classnames('top-bar__menu-item',
-        {'top-bar__menu-item_active': isEnabled},
-      )}
-      onClick={onClick}
+      className={classnames('top-bar__menu-item', {
+        'top-bar__menu-item_active': isActive,
+        'top-bar__menu-item_disabled': isDisabled,
+      })}
+      onClick={isDisabled ? noop : onClick}
     >
       {children}
     </div>
@@ -26,12 +28,14 @@ export function MenuItem({children, isEnabled, onClick}) {
 
 MenuItem.propTypes = {
   children: PropTypes.node.isRequired,
-  isEnabled: PropTypes.bool,
+  isActive: PropTypes.bool,
+  isDisabled: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
 };
 
 MenuItem.defaultProps = {
-  isEnabled: false,
+  isActive: false,
+  isDisabled: false,
 };
 
 export default function createMenu({

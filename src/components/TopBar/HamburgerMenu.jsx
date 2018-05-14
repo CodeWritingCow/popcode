@@ -1,6 +1,6 @@
-import noop from 'lodash/noop';
+import noop from 'lodash-es/noop';
 import {t} from 'i18next';
-import tap from 'lodash/tap';
+import tap from 'lodash-es/tap';
 import PropTypes from 'prop-types';
 import React from 'react';
 import config from '../../config';
@@ -12,6 +12,8 @@ const HamburgerMenu = createMenu({
   name: 'hamburger',
 
   renderItems({
+    hasInstructions,
+    isEditingInstructions,
     isExperimental,
     isGistExportInProgress,
     isRepoExportInProgress,
@@ -20,15 +22,10 @@ const HamburgerMenu = createMenu({
     onExportGist,
     onExportRepo,
     onExportToClassroom,
+    onStartEditingInstructions,
   }) {
     return tap([], (items) => {
       items.push(
-        <MenuItem
-          key="exportGist"
-          onClick={isGistExportInProgress ? noop : onExportGist}
-        >
-          {t('top-bar.export-gist')}
-        </MenuItem>,
         <MenuItem
           key="exportToClassroom"
           onClick={isClassroomExportInProgress ? noop : onExportToClassroom}
@@ -37,15 +34,40 @@ const HamburgerMenu = createMenu({
         </MenuItem>,
       );
 
-      if (isUserAuthenticated && isExperimental) {
+      items.push(
+        <MenuItem
+          isDisabled={isEditingInstructions}
+          key="addOrEditInstructions"
+          onClick={onStartEditingInstructions}
+        >
+          {
+            hasInstructions ?
+              t('top-bar.edit-instructions') :
+              t('top-bar.add-instructions')
+          }
+        </MenuItem>,
+      );
+
+      if (isUserAuthenticated) {
         items.push(
           <MenuItem
-            key="exportRepo"
-            onClick={isRepoExportInProgress ? noop : onExportRepo}
+            key="exportGist"
+            onClick={isGistExportInProgress ? noop : onExportGist}
           >
-            {t('top-bar.export-repo')}
+            {t('top-bar.export-gist')}
           </MenuItem>,
         );
+
+        if (isExperimental) {
+          items.push(
+            <MenuItem
+              key="exportRepo"
+              onClick={isRepoExportInProgress ? noop : onExportRepo}
+            >
+              {t('top-bar.export-repo')}
+            </MenuItem>,
+          );
+        }
       }
 
       items.push(
@@ -91,7 +113,9 @@ const HamburgerMenu = createMenu({
 
 
 HamburgerMenu.propTypes = {
+  hasInstructions: PropTypes.bool.isRequired,
   isClassroomExportInProgress: PropTypes.bool.isRequired,
+  isEditingInstructions: PropTypes.bool.isRequired,
   isExperimental: PropTypes.bool.isRequired,
   isGistExportInProgress: PropTypes.bool.isRequired,
   isOpen: PropTypes.bool.isRequired,
@@ -100,6 +124,7 @@ HamburgerMenu.propTypes = {
   onExportGist: PropTypes.func.isRequired,
   onExportRepo: PropTypes.func.isRequired,
   onExportToClassroom: PropTypes.func.isRequired,
+  onStartEditingInstructions: PropTypes.func.isRequired,
 };
 
 export default HamburgerMenu;

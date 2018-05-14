@@ -132,8 +132,15 @@ feedback from dozens of instructors.
 
 ### Running locally ###
 
-Pretty easy. Just check out the code. You’ll need [Yarn](https://yarnpkg.com/),
-which is the cool new NPM. It’s [easy to
+#### With Docker
+
+If you already use Docker, your best bet is to use it for Popcode development
+too. A simple `docker-compose up` will do the trick.
+
+#### Without Docker
+
+Still pretty easy. Just check out the code. You’ll need
+[Yarn](https://yarnpkg.com/), which is the cool new NPM. It’s [easy to
 install](https://yarnpkg.com/en/docs/install).
 
 Once you’ve got it just run:
@@ -220,6 +227,9 @@ for all the sordid details.
 * [Alessia Bellisario](http://aless.co/)
 * [Roan Kattouw](https://github.com/catrope)
 * [Harpreet Singh](https://github.com/harry1064)
+* [Limon Monte](https://limonte.github.io/)
+* [Matthew Armstrong](https://github.com/raingerber)
+* [Matt Garbis](http://www.mattgarbis.com/)
 * [Katie Conneally](http://www.katieconneally.com/) created the name Popcode
 * Logo design, "Pop" concept, and branding elements by the team at
   [Red Peak](http://redpeakgroup.com): Andrew Haug, Aya Kawabata, Jieun Lee,

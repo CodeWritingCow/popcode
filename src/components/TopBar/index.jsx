@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import partial from 'lodash/partial';
+import partial from 'lodash-es/partial';
 import Wordmark from '../../static/images/wordmark.svg';
 import Pop from '../Pop';
 import CurrentUser from './CurrentUser';
@@ -29,6 +29,8 @@ export default function TopBar({
   currentProjectKey,
   currentUser,
   enabledLibraries,
+  hasInstructions,
+  isEditingInstructions,
   isExperimental,
   isGistExportInProgress,
   isRepoExportInProgress,
@@ -49,6 +51,7 @@ export default function TopBar({
   onExportRepo,
   onExportToClassroom,
   onLogOut,
+  onStartEditingInstructions,
   onStartLogIn,
   onToggleLibrary,
   onToggleTextSize,
@@ -92,7 +95,9 @@ export default function TopBar({
         onStartLogIn={onStartLogIn}
       />
       <HamburgerMenu
+        hasInstructions={hasInstructions}
         isClassroomExportInProgress={isClassroomExportInProgress}
+        isEditingInstructions={isEditingInstructions}
         isExperimental={isExperimental}
         isGistExportInProgress={isGistExportInProgress}
         isOpen={openMenu === 'hamburger'}
@@ -102,6 +107,8 @@ export default function TopBar({
         onExportGist={onExportGist}
         onExportRepo={onExportRepo}
         onExportToClassroom={onExportToClassroom}
+        onStartEditingInstructions={
+          partial(onStartEditingInstructions, currentProjectKey)}
       />
     </header>
   );
@@ -111,7 +118,9 @@ TopBar.propTypes = {
   currentProjectKey: PropTypes.string,
   currentUser: PropTypes.object.isRequired,
   enabledLibraries: PropTypes.arrayOf(PropTypes.string).isRequired,
+  hasInstructions: PropTypes.bool.isRequired,
   isClassroomExportInProgress: PropTypes.bool.isRequired,
+  isEditingInstructions: PropTypes.bool.isRequired,
   isExperimental: PropTypes.bool.isRequired,
   isGistExportInProgress: PropTypes.bool.isRequired,
   isRepoExportInProgress: PropTypes.bool.isRequired,
@@ -131,6 +140,7 @@ TopBar.propTypes = {
   onExportRepo: PropTypes.func.isRequired,
   onExportToClassroom: PropTypes.func.isRequired,
   onLogOut: PropTypes.func.isRequired,
+  onStartEditingInstructions: PropTypes.func.isRequired,
   onStartLogIn: PropTypes.func.isRequired,
   onToggleLibrary: PropTypes.func.isRequired,
   onToggleTextSize: PropTypes.func.isRequired,

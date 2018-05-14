@@ -1,6 +1,6 @@
-import isEmpty from 'lodash/isEmpty';
-import map from 'lodash/map';
-import partial from 'lodash/partial';
+import isEmpty from 'lodash-es/isEmpty';
+import map from 'lodash-es/map';
+import partial from 'lodash-es/partial';
 import PropTypes from 'prop-types';
 import React from 'react';
 import ProjectPreview from '../../containers/ProjectPreview';
@@ -20,7 +20,7 @@ const ProjectPicker = createMenu({
   renderItems({currentProjectKey, projectKeys, onChangeCurrentProject}) {
     return map(projectKeys, projectKey => (
       <MenuItem
-        isEnabled={projectKey === currentProjectKey}
+        isActive={projectKey === currentProjectKey}
         key={projectKey}
         onClick={partial(onChangeCurrentProject, projectKey)}
       >
