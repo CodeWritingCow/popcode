@@ -4,6 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
+
 const OfflinePlugin = require('offline-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -15,6 +16,7 @@ const webpack = require('webpack');
 const escapeRegExp = require('lodash.escaperegexp');
 const git = require('git-rev-sync');
 const babel = require('babel-core');
+
 const babelLoaderVersion =
   require('./node_modules/babel-loader/package.json').version;
 
@@ -63,6 +65,9 @@ module.exports = (env = process.env.NODE_ENV || 'development') => {
     new webpack.EnvironmentPlugin({
       FIREBASE_APP: 'popcode-development',
       FIREBASE_API_KEY: 'AIzaSyCHlo2RhOkRFFh48g779YSZrLwKjoyCcws',
+      FIREBASE_CLIENT_ID:
+      /* eslint-disable-next-line max-len */
+        '488497217137-c0mdq8uca6ot5o9u9avo3j5mfsi1q9v5.apps.googleusercontent.com',
       GIT_REVISION: git.short(),
       NODE_ENV: env,
       WARN_ON_DROPPED_ERRORS: 'false',
@@ -162,8 +167,17 @@ module.exports = (env = process.env.NODE_ENV || 'development') => {
   return {
     mode: isProduction ? 'production' : 'development',
     entry: isTest ? undefined : {
-      main: './src/application.js',
-      preview: './src/preview.js',
+      main: [
+        'babel-polyfill',
+        'es6-set/implement',
+        'whatwg-fetch',
+        './src/init/DOMParserShim',
+        './src/application.js',
+      ],
+      preview: [
+        'babel-polyfill',
+        './src/preview.js',
+      ],
     },
     optimization: {
       splitChunks: isTest ? false : {chunks: 'all'},

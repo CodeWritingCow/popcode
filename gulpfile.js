@@ -6,11 +6,12 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+
 const gulp = require('gulp');
 const concat = require('gulp-concat');
 const sourcemaps = require('gulp-sourcemaps');
 const cssnano = require('cssnano');
-const forOwn = require('lodash/forOwn');
+const forOwn = require('lodash.forown');
 const git = require('git-rev-sync');
 const postcss = require('gulp-postcss');
 const cssnext = require('postcss-cssnext');
@@ -20,6 +21,7 @@ const cloudflare = require('cloudflare');
 const BrowserSync = require('browser-sync');
 const pify = require('pify');
 const isDocker = require('is-docker');
+
 const config = require('./src/config');
 const webpackConfiguration = require('./webpack.config');
 

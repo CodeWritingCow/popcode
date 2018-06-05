@@ -4,6 +4,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import get from 'lodash-es/get';
 import preventClickthrough from 'react-prevent-clickthrough';
+
 import {
   createAceEditor,
   createAceSessionWithoutWorker,
@@ -16,12 +17,15 @@ export default class ConsoleInput extends Component {
     bindAll(this, '_ref');
   }
 
-  componentWillReceiveProps({isTextSizeLarge, requestedFocusedLine}) {
-    if (isTextSizeLarge !== this.props.isTextSizeLarge) {
+  componentDidUpdate({isTextSizeLarge: prevIsTextSizeLarge}) {
+    const {isTextSizeLarge, requestedFocusedLine} = this.props;
+
+    if (isTextSizeLarge !== prevIsTextSizeLarge) {
       requestAnimationFrame(() => {
         inheritFontStylesFromParentElement(this._editor);
       });
     }
+
     this._focusRequestedLine(requestedFocusedLine);
   }
 

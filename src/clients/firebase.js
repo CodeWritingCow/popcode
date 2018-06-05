@@ -2,9 +2,17 @@ import Cookies from 'js-cookie';
 import get from 'lodash-es/get';
 import isNil from 'lodash-es/isNil';
 import isNull from 'lodash-es/isNull';
+import omit from 'lodash-es/omit';
 import values from 'lodash-es/values';
 import uuid from 'uuid/v4';
-import {auth, loadDatabase, githubAuthProvider} from '../services/appFirebase';
+
+import {getGapiSync} from '../services/gapi';
+import {
+  auth,
+  loadDatabase,
+  githubAuthProvider,
+  googleAuthProvider,
+} from '../services/appFirebase';
 
 const VALID_SESSION_UID_COOKIE = 'firebaseAuth.validSessionUid';
 const SESSION_TTL_MS = 5 * 60 * 1000;
@@ -31,10 +39,16 @@ export async function loadAllProjects(uid) {
   return values(projects.val() || {});
 }
 
+function getProjectforSnapshot(project) {
+  const snapshotBlacklist = ['externalLocations'];
+  return omit(project, snapshotBlacklist);
+}
+
 export async function createProjectSnapshot(project) {
   const snapshotKey = uuid().toString();
   const database = await loadDatabase();
-  await database.ref('snapshots').child(snapshotKey).set(project);
+  const projectForSnapshot = getProjectforSnapshot(project);
+  await database.ref('snapshots').child(snapshotKey).set(projectForSnapshot);
   return snapshotKey;
 }
 
@@ -68,12 +82,16 @@ async function userCredentialForUserData(user) {
   return {user, credential, additionalUserInfo};
 }
 
-export async function signIn() {
+export async function signIn(provider) {
   const originalOnerror = window.onerror;
   window.onerror = message => message.toLowerCase().includes('network error');
-
   try {
-    const userCredential = await auth.signInWithPopup(githubAuthProvider);
+    let userCredential;
+    if (provider === 'github') {
+      userCredential = await signInWithGithub();
+    } else if (provider === 'google') {
+      userCredential = await signInWithGoogle();
+    }
     await saveUserCredential(userCredential);
     return userCredential;
   } finally {
@@ -83,7 +101,24 @@ export async function signIn() {
   }
 }
 
-export function signOut() {
+async function signInWithGithub() {
+  return auth.signInWithPopup(githubAuthProvider);
+}
+
+async function signInWithGoogle() {
+  const gapi = getGapiSync();
+  const googleUser =
+    await gapi.auth2.getAuthInstance().signIn({prompt: 'select_account'});
+  const googleCredential =
+    googleAuthProvider.credential(googleUser.getAuthResponse().id_token);
+  return auth.signInAndRetrieveDataWithCredential(googleCredential);
+}
+
+export async function signOut() {
+  const gapi = getGapiSync();
+  if (await gapi.auth2.getAuthInstance().isSignedIn.get()) {
+    gapi.auth2.getAuthInstance().signOut();
+  }
   return auth.signOut();
 }
 

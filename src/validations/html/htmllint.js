@@ -2,6 +2,7 @@ import clone from 'lodash-es/clone';
 import defaults from 'lodash-es/defaults';
 import {Linter, rules} from 'htmllint';
 import reduce from 'lodash-es/reduce';
+
 import Validator from '../Validator';
 
 const errorMap = {
@@ -147,20 +148,20 @@ class HtmllintValidator extends Validator {
     super(source, 'html', errorMap);
   }
 
-  async _getRawErrors() {
+  async getRawErrors() {
     try {
-      const results = await linter.lint(this._source, options);
+      const results = await linter.lint(this.source, options);
       return results;
     } catch (e) {
       return [];
     }
   }
 
-  _keyForError(error) {
+  keyForError(error) {
     return error.code;
   }
 
-  _locationForError(error) {
+  locationForError(error) {
     const row = error.line - 1;
     const column = error.column - 1;
     return {row, column};

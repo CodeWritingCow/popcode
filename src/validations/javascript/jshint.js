@@ -6,6 +6,7 @@ import defaults from 'lodash-es/defaults';
 import find from 'lodash-es/find';
 import includes from 'lodash-es/includes';
 import {JSHINT as jshint} from 'jshint';
+
 import libraries from '../../config/libraries';
 import Validator from '../Validator';
 
@@ -140,7 +141,7 @@ const errorMap = {
 
 class JsHintValidator extends Validator {
   constructor(source, analyzer) {
-    super(source, 'javascript', errorMap, analyzer);
+    super(source, 'javascript', errorMap);
     this._jshintOptions = this._getConfig(
       analyzer.containsExternalScript,
       analyzer.enabledLibraries,
@@ -170,9 +171,9 @@ class JsHintValidator extends Validator {
     return options;
   }
 
-  async _getRawErrors() {
+  async getRawErrors() {
     try {
-      jshint(this._source, this._jshintOptions);
+      jshint(this.source, this._jshintOptions);
     } catch (e) {
       return [];
     }
@@ -181,11 +182,11 @@ class JsHintValidator extends Validator {
     return compact(castArray(data.errors));
   }
 
-  _keyForError(error) {
+  keyForError(error) {
     return error.code;
   }
 
-  _locationForError(error) {
+  locationForError(error) {
     const row = error.line - 1;
     const column = error.character - 1;
     return {row, column};

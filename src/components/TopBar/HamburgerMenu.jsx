@@ -1,9 +1,10 @@
-import noop from 'lodash-es/noop';
 import {t} from 'i18next';
 import tap from 'lodash-es/tap';
 import PropTypes from 'prop-types';
 import React from 'react';
+
 import config from '../../config';
+
 import createMenu, {MenuItem} from './createMenu';
 import HamburgerMenuButton from './HamburgerMenuButton';
 
@@ -15,25 +16,27 @@ const HamburgerMenu = createMenu({
     hasInstructions,
     isEditingInstructions,
     isExperimental,
-    isGistExportInProgress,
-    isRepoExportInProgress,
-    isClassroomExportInProgress,
+    isGapiReady,
     isUserAuthenticated,
-    onExportGist,
-    onExportRepo,
-    onExportToClassroom,
     onStartEditingInstructions,
+    onStartGoogleLogIn,
+
   }) {
     return tap([], (items) => {
-      items.push(
-        <MenuItem
-          key="exportToClassroom"
-          onClick={isClassroomExportInProgress ? noop : onExportToClassroom}
-        >
-          {t('top-bar.share-to-classroom')}
-        </MenuItem>,
-      );
-
+      if (
+        !isUserAuthenticated &&
+        isExperimental &&
+        isGapiReady
+      ) {
+        items.push(
+          <MenuItem
+            key="startGoogleLogIn"
+            onClick={onStartGoogleLogIn}
+          >
+            Login with Google
+          </MenuItem>,
+        );
+      }
       items.push(
         <MenuItem
           isDisabled={isEditingInstructions}
@@ -47,28 +50,6 @@ const HamburgerMenu = createMenu({
           }
         </MenuItem>,
       );
-
-      if (isUserAuthenticated) {
-        items.push(
-          <MenuItem
-            key="exportGist"
-            onClick={isGistExportInProgress ? noop : onExportGist}
-          >
-            {t('top-bar.export-gist')}
-          </MenuItem>,
-        );
-
-        if (isExperimental) {
-          items.push(
-            <MenuItem
-              key="exportRepo"
-              onClick={isRepoExportInProgress ? noop : onExportRepo}
-            >
-              {t('top-bar.export-repo')}
-            </MenuItem>,
-          );
-        }
-      }
 
       items.push(
         <a
@@ -114,17 +95,13 @@ const HamburgerMenu = createMenu({
 
 HamburgerMenu.propTypes = {
   hasInstructions: PropTypes.bool.isRequired,
-  isClassroomExportInProgress: PropTypes.bool.isRequired,
   isEditingInstructions: PropTypes.bool.isRequired,
   isExperimental: PropTypes.bool.isRequired,
-  isGistExportInProgress: PropTypes.bool.isRequired,
+  isGapiReady: PropTypes.bool.isRequired,
   isOpen: PropTypes.bool.isRequired,
-  isRepoExportInProgress: PropTypes.bool.isRequired,
   isUserAuthenticated: PropTypes.bool.isRequired,
-  onExportGist: PropTypes.func.isRequired,
-  onExportRepo: PropTypes.func.isRequired,
-  onExportToClassroom: PropTypes.func.isRequired,
   onStartEditingInstructions: PropTypes.func.isRequired,
+  onStartGoogleLogIn: PropTypes.func.isRequired,
 };
 
 export default HamburgerMenu;

@@ -7,6 +7,7 @@ import get from 'lodash-es/get';
 import partial from 'lodash-es/partial';
 import {t} from 'i18next';
 import classnames from 'classnames';
+
 import {getNodeWidth, getNodeWidths} from '../util/resize';
 import {getQueryParameters, setQueryParameters} from '../util/queryParams';
 import {dehydrateProject, rehydrateProject} from '../clients/localStorage';
@@ -17,7 +18,8 @@ import TopBar from '../containers/TopBar';
 import Instructions from '../containers/Instructions';
 import NotificationList from '../containers/NotificationList';
 import EditorsColumn from '../containers/EditorsColumn';
-import Output from './Output';
+import Output from '../containers/Output';
+
 import PopThrobber from './PopThrobber';
 
 export default class Workspace extends React.Component {
@@ -34,7 +36,7 @@ export default class Workspace extends React.Component {
     this.columnRefs = [null, null];
   }
 
-  componentWillMount() {
+  componentDidMount() {
     const {onApplicationLoaded} = this.props;
     const {
       gistId,
@@ -42,16 +44,16 @@ export default class Workspace extends React.Component {
       isExperimental,
     } = getQueryParameters(location.search);
     const rehydratedProject = rehydrateProject();
+
     setQueryParameters({isExperimental});
+
     onApplicationLoaded({
       snapshotKey,
       gistId,
       isExperimental,
       rehydratedProject,
     });
-  }
 
-  componentDidMount() {
     addEventListener('beforeunload', this._handleUnload);
   }
 
@@ -64,20 +66,6 @@ export default class Workspace extends React.Component {
     if (!isNull(currentProject) && !isPristineProject(currentProject)) {
       dehydrateProject(currentProject);
     }
-  }
-
-  _renderOutput() {
-    const {isDraggingColumnDivider, rowsFlex} = this.props;
-    return (
-      <Output
-        ignorePointerEvents={
-          isDraggingColumnDivider ||
-            Boolean(get(this, 'props.ui.topBar.openMenu'))
-        }
-        style={{flex: rowsFlex[1]}}
-        onRef={partial(this._storeColumnRef, 1)}
-      />
-    );
   }
 
   _handleClickInstructionsBar() {
@@ -162,7 +150,10 @@ export default class Workspace extends React.Component {
             ref={this._storeDividerRef}
           />
         </DraggableCore>
-        {this._renderOutput()}
+        <Output
+          style={{flex: rowsFlex[1]}}
+          onRef={partial(this._storeColumnRef, 1)}
+        />
       </div>
     );
   }
@@ -186,7 +177,6 @@ export default class Workspace extends React.Component {
 
 Workspace.propTypes = {
   currentProject: PropTypes.object,
-  isDraggingColumnDivider: PropTypes.bool.isRequired,
   isEditingInstructions: PropTypes.bool.isRequired,
   rowsFlex: PropTypes.array.isRequired,
   onApplicationLoaded: PropTypes.func.isRequired,

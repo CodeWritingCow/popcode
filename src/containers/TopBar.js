@@ -1,6 +1,8 @@
 import {connect} from 'react-redux';
+
 import TopBar from '../components/TopBar';
 import {
+  getCurrentProjectExportedRepoName,
   getCurrentProjectKey,
   getCurrentProjectInstructions,
   getCurrentUser,
@@ -10,11 +12,13 @@ import {
   getAllProjectKeys,
   isEditingInstructions,
   isExperimental,
+  isGapiReady,
   isGistExportInProgress,
   isRepoExportInProgress,
   isClassroomExportInProgress,
   isSnapshotInProgress,
   isTextSizeLarge,
+  isUserAuthenticatedWithGithub,
   isUserAuthenticated,
   isUserTyping,
 } from '../selectors';
@@ -38,19 +42,26 @@ function mapStateToProps(state) {
     currentUser: getCurrentUser(state),
     enabledLibraries: getEnabledLibraries(state),
     hasInstructions: Boolean(getCurrentProjectInstructions(state)),
+    hasExportedRepo: Boolean(getCurrentProjectExportedRepoName(state)),
     isEditingInstructions: isEditingInstructions(state),
     isExperimental: isExperimental(state),
+    isGapiReady: isGapiReady(state),
     isGistExportInProgress: isGistExportInProgress(state),
     isRepoExportInProgress: isRepoExportInProgress(state),
     isClassroomExportInProgress: isClassroomExportInProgress(state),
     isSnapshotInProgress: isSnapshotInProgress(state),
     isTextSizeLarge: isTextSizeLarge(state),
     isUserAuthenticated: isUserAuthenticated(state),
+    isUserAuthenticatedWithGithub: isUserAuthenticatedWithGithub(state),
     isUserTyping: isUserTyping(state),
     openMenu: getOpenTopBarMenu(state),
     projectKeys: getAllProjectKeys(state),
     validationState: getCurrentValidationState(state),
   };
+}
+
+function exportRepo(dispatch) {
+  dispatch(exportProject('repo'));
 }
 
 function mapDispatchToProps(dispatch) {
@@ -80,7 +91,11 @@ function mapDispatchToProps(dispatch) {
     },
 
     onExportRepo() {
-      dispatch(exportProject('repo'));
+      exportRepo(dispatch);
+    },
+
+    onUpdateRepo() {
+      exportRepo(dispatch);
     },
 
     onExportToClassroom() {
@@ -99,8 +114,12 @@ function mapDispatchToProps(dispatch) {
       dispatch(startEditingInstructions(projectKey));
     },
 
-    onStartLogIn() {
-      dispatch(logIn());
+    onStartGithubLogIn() {
+      dispatch(logIn('github'));
+    },
+
+    onStartGoogleLogIn() {
+      dispatch(logIn('google'));
     },
 
     onToggleTextSize() {

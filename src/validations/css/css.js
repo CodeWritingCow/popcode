@@ -1,4 +1,5 @@
 import css from 'css';
+
 import Validator from '../Validator';
 
 const errorMap = {
@@ -20,15 +21,15 @@ class CssValidator extends Validator {
     super(source, 'css', errorMap);
   }
 
-  async _getRawErrors() {
-    return css.parse(this._source, {silent: true}).stylesheet.parsingErrors;
+  async getRawErrors() {
+    return css.parse(this.source, {silent: true}).stylesheet.parsingErrors;
   }
 
-  _keyForError(error) {
+  keyForError(error) {
     return error.reason;
   }
 
-  _locationForError(error) {
+  locationForError(error) {
     const row = error.line - 1;
     const column = error.column - 1;
     return {row, column};

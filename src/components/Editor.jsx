@@ -1,9 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import bindAll from 'lodash-es/bindAll';
+import constant from 'lodash-es/constant';
 import get from 'lodash-es/get';
 import throttle from 'lodash-es/throttle';
 import noop from 'lodash-es/noop';
+
 import {createAceEditor, createAceSessionWithoutWorker} from '../util/ace';
 
 import 'brace/ext/searchbox';
@@ -27,6 +29,10 @@ class Editor extends React.Component {
     }, RESIZE_THROTTLE);
 
     bindAll(this, '_handleWindowResize', '_resizeEditor', '_setupEditor');
+
+    this.render = constant(
+      <div className="editors__editor" ref={this._setupEditor} />,
+    );
   }
 
   componentDidMount() {
@@ -35,26 +41,34 @@ class Editor extends React.Component {
     window.addEventListener('resize', this._handleWindowResize);
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.projectKey !== this.props.projectKey) {
-      this._startNewSession(nextProps.source);
-    } else if (nextProps.source !== this.props.source &&
-        nextProps.source !== this._editor.getValue()) {
-      this._editor.setValue(nextProps.source);
+  componentDidUpdate({
+    percentageOfHeight: prevPercentageOfHeight,
+    projectKey: prevProjectKey,
+    source: prevSource,
+  }) {
+    const {
+      errors,
+      percentageOfHeight,
+      projectKey,
+      requestedFocusedLine,
+      source,
+      textSizeIsLarge,
+    } = this.props;
+
+    if (projectKey !== prevProjectKey) {
+      this._startNewSession(source);
+    } else if (source !== prevSource && source !== this._editor.getValue()) {
+      this._editor.setValue(source);
     }
 
-    this._focusRequestedLine(nextProps.requestedFocusedLine);
-    this._applyFontSize(nextProps.textSizeIsLarge);
+    this._focusRequestedLine(requestedFocusedLine);
+    this._applyFontSize(textSizeIsLarge);
 
-    if (nextProps.percentageOfHeight !== this.props.percentageOfHeight) {
+    if (percentageOfHeight !== prevPercentageOfHeight) {
       requestAnimationFrame(this._resizeEditor);
     }
 
-    this._editor.getSession().setAnnotations(nextProps.errors);
-  }
-
-  shouldComponentUpdate() {
-    return false;
+    this._editor.getSession().setAnnotations(errors);
   }
 
   componentWillUnmount() {
@@ -121,15 +135,6 @@ class Editor extends React.Component {
     this._editor.setSession(session);
     this._editor.moveCursorTo(0, 0);
     this._resizeEditor();
-  }
-
-  render() {
-    return (
-      <div
-        className="editors__editor"
-        ref={this._setupEditor}
-      />
-    );
   }
 }
 

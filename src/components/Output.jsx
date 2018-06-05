@@ -1,15 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import prefixAll from 'inline-style-prefixer/static';
+
 import ErrorReport from '../containers/ErrorReport';
 import Preview from '../containers/Preview';
 import Console from '../containers/Console';
 
 export default function Output({
-  ignorePointerEvents,
+  isAnyTopBarMenuOpen,
+  isDraggingColumnDivider,
   style,
   onRef,
 }) {
+  const ignorePointerEvents =
+    isDraggingColumnDivider || isAnyTopBarMenuOpen;
+
   return (
     <div
       className="environment__column"
@@ -28,7 +33,8 @@ export default function Output({
 }
 
 Output.propTypes = {
-  ignorePointerEvents: PropTypes.bool.isRequired,
+  isAnyTopBarMenuOpen: PropTypes.bool.isRequired,
+  isDraggingColumnDivider: PropTypes.bool.isRequired,
   style: PropTypes.object.isRequired,
   onRef: PropTypes.func.isRequired,
 };

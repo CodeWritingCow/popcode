@@ -1,9 +1,9 @@
-import './init';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Immutable from 'immutable';
 import installDevTools from 'immutable-devtools';
 import {install as installOfflinePlugin} from 'offline-plugin/runtime';
+
 import {bugsnagClient} from './util/bugsnag';
 import Application from './components/Application';
 import initI18n from './util/initI18n';

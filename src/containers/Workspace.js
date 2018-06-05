@@ -1,4 +1,5 @@
 import {connect} from 'react-redux';
+
 import Workspace from '../components/Workspace';
 import {getCurrentProject, isEditingInstructions} from '../selectors';
 import {
@@ -12,9 +13,6 @@ import {
 function mapStateToProps(state) {
   return {
     currentProject: getCurrentProject(state),
-    isDraggingColumnDivider: state.getIn(
-      ['ui', 'workspace', 'isDraggingColumnDivider'],
-    ),
     isEditingInstructions: isEditingInstructions(state),
     rowsFlex: state.getIn(['ui', 'workspace', 'rowFlex']).toJS(),
   };

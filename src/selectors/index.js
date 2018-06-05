@@ -5,6 +5,8 @@ import getConsoleHistory from './getConsoleHistory';
 import getCurrentCompiledProjectKey from './getCurrentCompiledProjectKey';
 import getCurrentProject from './getCurrentProject';
 import getCurrentProjectInstructions from './getCurrentProjectInstructions';
+import getCurrentProjectExportedRepoName
+  from './getCurrentProjectExportedRepoName';
 import getCurrentProjectKey from './getCurrentProjectKey';
 import getCurrentUser from './getCurrentUser';
 import getCurrentUserId from './getCurrentUserId';
@@ -17,18 +19,22 @@ import getNotifications from './getNotifications';
 import getOpenTopBarMenu from './getOpenTopBarMenu';
 import getProject from './getProject';
 import getRequestedFocusedLine from './getRequestedFocusedLine';
+import isClassroomExportInProgress from './isClassroomExportInProgress';
 import isCurrentlyValidating from './isCurrentlyValidating';
 import isCurrentProjectSyntacticallyValid
   from './isCurrentProjectSyntacticallyValid';
+import isDraggingColumnDivider from './isDraggingColumnDivider';
 import isEditingInstructions from './isEditingInstructions';
 import isExperimental from './isExperimental';
+import isGapiReady from './isGapiReady';
 import isGistExportInProgress from './isGistExportInProgress';
 import isRepoExportInProgress from './isRepoExportInProgress';
-import isClassroomExportInProgress from './isClassroomExportInProgress';
 import isSnapshotInProgress from './isSnapshotInProgress';
 import isTextSizeLarge from './isTextSizeLarge';
-import isUserAuthenticated from './isUserAuthenticated';
 import isUserTyping from './isUserTyping';
+import isUserAuthenticated from './isUserAuthenticated';
+import isUserAuthenticatedWithGithub from './isUserAuthenticatedWithGithub';
+import isUserAuthenticatedWithGoogle from './isUserAuthenticatedWithGoogle';
 import makeGetProjectPreview from './makeGetProjectPreview';
 
 export {
@@ -38,6 +44,7 @@ export {
   getConsoleHistory,
   getCurrentCompiledProjectKey,
   getCurrentProject,
+  getCurrentProjectExportedRepoName,
   getCurrentProjectInstructions,
   getCurrentProjectKey,
   getCurrentUser,
@@ -51,16 +58,20 @@ export {
   getOpenTopBarMenu,
   getProject,
   getRequestedFocusedLine,
+  isClassroomExportInProgress,
   isCurrentlyValidating,
   isCurrentProjectSyntacticallyValid,
+  isDraggingColumnDivider,
   isEditingInstructions,
   isExperimental,
+  isGapiReady,
   isGistExportInProgress,
   isRepoExportInProgress,
-  isClassroomExportInProgress,
   isSnapshotInProgress,
   isTextSizeLarge,
-  isUserAuthenticated,
   isUserTyping,
+  isUserAuthenticated,
+  isUserAuthenticatedWithGithub,
+  isUserAuthenticatedWithGoogle,
   makeGetProjectPreview,
 };
