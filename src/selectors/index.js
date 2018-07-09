@@ -29,9 +29,11 @@ import isExperimental from './isExperimental';
 import isGapiReady from './isGapiReady';
 import isGistExportInProgress from './isGistExportInProgress';
 import isRepoExportInProgress from './isRepoExportInProgress';
+import isSaveIndicatorShown from './isSaveIndicatorShown';
 import isSnapshotInProgress from './isSnapshotInProgress';
 import isTextSizeLarge from './isTextSizeLarge';
 import isUserTyping from './isUserTyping';
+import isUserAnonymous from './isUserAnonymous';
 import isUserAuthenticated from './isUserAuthenticated';
 import isUserAuthenticatedWithGithub from './isUserAuthenticatedWithGithub';
 import isUserAuthenticatedWithGoogle from './isUserAuthenticatedWithGoogle';
@@ -67,9 +69,11 @@ export {
   isGapiReady,
   isGistExportInProgress,
   isRepoExportInProgress,
+  isSaveIndicatorShown,
   isSnapshotInProgress,
   isTextSizeLarge,
   isUserTyping,
+  isUserAnonymous,
   isUserAuthenticated,
   isUserAuthenticatedWithGithub,
   isUserAuthenticatedWithGoogle,

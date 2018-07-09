@@ -5,6 +5,7 @@ import partial from 'lodash-es/partial';
 
 import Wordmark from '../../static/images/wordmark.svg';
 import Pop from '../Pop';
+import {UserAccount} from '../../records';
 
 import CurrentUser from './CurrentUser';
 import ExportMenu from './ExportMenu';
@@ -40,6 +41,7 @@ export default function TopBar({
   isGistExportInProgress,
   isRepoExportInProgress,
   isClassroomExportInProgress,
+  isUserAnonymous,
   isUserAuthenticated,
   isUserAuthenticatedWithGithub,
   isUserTyping,
@@ -47,6 +49,7 @@ export default function TopBar({
   isTextSizeLarge,
   openMenu,
   projectKeys,
+  shouldShowSavedIndicator,
   validationState,
   onChangeCurrentProject,
   onClickMenu,
@@ -104,15 +107,18 @@ export default function TopBar({
         currentProjectKey={currentProjectKey}
         isUserAuthenticated={isUserAuthenticated}
         projectKeys={projectKeys}
+        shouldShowSavedIndicator={shouldShowSavedIndicator}
         onChangeCurrentProject={onChangeCurrentProject}
       />
       <CurrentUser
         isOpen={openMenu === 'currentUser'}
+        isUserAnonymous={isUserAnonymous}
+        isUserAuthenticated={isUserAuthenticated}
         user={currentUser}
         onClick={partial(onClickMenu, 'currentUser')}
         onClose={partial(onCloseMenu, 'currentUser')}
         onLogOut={onLogOut}
-        onStartGithubLogIn={onStartGithubLogIn}
+        onStartLogIn={onStartGithubLogIn}
       />
       <HamburgerMenu
         hasInstructions={hasInstructions}
@@ -132,7 +138,7 @@ export default function TopBar({
 
 TopBar.propTypes = {
   currentProjectKey: PropTypes.string,
-  currentUser: PropTypes.object.isRequired,
+  currentUser: PropTypes.instanceOf(UserAccount),
   enabledLibraries: PropTypes.arrayOf(PropTypes.string).isRequired,
   hasExportedRepo: PropTypes.bool.isRequired,
   hasInstructions: PropTypes.bool.isRequired,
@@ -144,11 +150,13 @@ TopBar.propTypes = {
   isRepoExportInProgress: PropTypes.bool.isRequired,
   isSnapshotInProgress: PropTypes.bool.isRequired,
   isTextSizeLarge: PropTypes.bool.isRequired,
+  isUserAnonymous: PropTypes.bool.isRequired,
   isUserAuthenticated: PropTypes.bool.isRequired,
   isUserAuthenticatedWithGithub: PropTypes.bool.isRequired,
   isUserTyping: PropTypes.bool.isRequired,
   openMenu: PropTypes.string,
   projectKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
+  shouldShowSavedIndicator: PropTypes.bool.isRequired,
   validationState: PropTypes.string.isRequired,
   onChangeCurrentProject: PropTypes.func.isRequired,
   onClickMenu: PropTypes.func.isRequired,
@@ -169,6 +177,7 @@ TopBar.propTypes = {
 
 TopBar.defaultProps = {
   currentProjectKey: null,
+  currentUser: null,
   isExperimental: false,
   openMenu: null,
 };
