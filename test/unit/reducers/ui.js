@@ -12,8 +12,6 @@ import {
   updateProjectInstructions,
 } from '../../../src/actions/projects';
 import {
-  dragColumnDivider,
-  dragRowDivider,
   userDoneTyping,
   focusLine,
   editorFocusedRequestedLine,
@@ -35,6 +33,9 @@ import {
 } from '../../../src/actions/clients';
 import {EmptyGistError} from '../../../src/clients/github';
 import {
+  identityLinked,
+  linkGithubIdentity,
+  linkIdentityFailed,
   userLoggedOut,
 } from '../../../src/actions/user';
 import {
@@ -61,74 +62,6 @@ function withNotification(type, severity, payload = {}) {
 }
 
 const gistId = '12345';
-
-test('dragColumnDivider', reducerTest(
-  reducer,
-  initialState,
-  partial(dragColumnDivider, {
-    dividerWidth: {minWidth: 4},
-    columnWidths: [
-      {width: 400, minWidth: 300},
-      {width: 400, minWidth: 300},
-    ],
-    deltaX: 5,
-    lastX: 400,
-    x: 405,
-  }),
-  initialState.setIn(
-    ['workspace', 'rowFlex'],
-    new Immutable.List(['0 1 405px', '1', '1']),
-  ),
-));
-
-test('dragRowDivider', (t) => {
-  t.test('dragging first divider down', reducerTest(
-    reducer,
-    initialState,
-    partial(dragRowDivider, {
-      index: 0,
-      dividerHeights: [
-        {minHeight: 4},
-        {minHeight: 4},
-      ],
-      editorHeights: [
-        {height: 100, minHeight: 85},
-        {height: 100, minHeight: 85},
-        {height: 100, minHeight: 85},
-      ],
-      deltaY: 5,
-      lastY: 100,
-      y: 105,
-    }),
-    initialState.setIn(
-      ['workspace', 'columnFlex'],
-      new Immutable.List(['0 1 105px', '1', '0 1 100px']),
-    ),
-  ));
-  t.test('dragging second divider down', reducerTest(
-    reducer,
-    initialState,
-    partial(dragRowDivider, {
-      index: 1,
-      dividerHeights: [
-        {minHeight: 4},
-        {minHeight: 4},
-      ],
-      editorHeights: [
-        {height: 100, minHeight: 85},
-        {height: 100, minHeight: 85},
-        {height: 100, minHeight: 85},
-      ],
-      deltaY: 5,
-      lastY: 204,
-      y: 209,
-    }),
-    initialState.setIn(
-      ['workspace', 'columnFlex'],
-      new Immutable.List(['0 1 100px', '0 1 105px', '1']),
-    ),
-  ));
-});
 
 test('startEditingInstructions', reducerTest(
   reducer,
@@ -215,6 +148,43 @@ test('userLoggedOut', (t) => {
     initialState.setIn(['topBar', 'openMenu'], 'silly'),
   ));
 });
+
+test('linkGithubIdentity', (t) => {
+  t.test('with no top bar menu open', reducerTest(
+    reducer,
+    initialState,
+    linkGithubIdentity,
+    initialState,
+  ));
+
+  t.test('with currentUser menu open', reducerTest(
+    reducer,
+    initialState.setIn(['topBar', 'openMenu'], 'currentUser'),
+    linkGithubIdentity,
+    initialState,
+  ));
+
+  t.test('with different menu open', reducerTest(
+    reducer,
+    initialState.setIn(['topBar', 'openMenu'], 'silly'),
+    linkGithubIdentity,
+    initialState.setIn(['topBar', 'openMenu'], 'silly'),
+  ));
+});
+
+test('identityLinked', reducerTest(
+  reducer,
+  initialState,
+  partial(identityLinked, {providerId: 'github.com'}),
+  withNotification('identity-linked', 'notice', {provider: 'github.com'}),
+));
+
+test('linkIdentityFailed', reducerTest(
+  reducer,
+  initialState,
+  partial(linkIdentityFailed, new Error()),
+  withNotification('link-identity-failed', 'error'),
+));
 
 tap({url: 'https://gists.github.com/12345abc', exportType: 'gist'}, (payload) => {
   test('projectExportNotDisplayed', reducerTest(

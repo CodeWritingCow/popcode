@@ -23,8 +23,6 @@ import {
 import {
   focusLine,
   editorFocusedRequestedLine,
-  dragRowDivider,
-  dragColumnDivider,
   startDragColumnDivider,
   stopDragColumnDivider,
   notificationTriggered,
@@ -45,6 +43,7 @@ import {
 } from './errors';
 
 import {
+  linkGithubIdentity,
   logIn,
   logOut,
   userAuthenticated,
@@ -65,6 +64,10 @@ import {
   evaluateConsoleEntry,
 } from './console';
 
+import {
+  updateResizableFlex,
+} from './resizableFlex';
+
 export {
   clearConsoleEntries,
   consoleValueProduced,
@@ -84,8 +87,6 @@ export {
   toggleComponent,
   focusLine,
   editorFocusedRequestedLine,
-  dragRowDivider,
-  dragColumnDivider,
   startDragColumnDivider,
   stopDragColumnDivider,
   notificationTriggered,
@@ -111,4 +112,6 @@ export {
   projectSuccessfullySaved,
   showSaveIndicator,
   hideSaveIndicator,
+  linkGithubIdentity,
+  updateResizableFlex,
 };

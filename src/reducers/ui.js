@@ -1,16 +1,6 @@
 import Immutable from 'immutable';
 
-import {
-  updateEditorColumnFlex,
-  updateWorkspaceRowFlex,
-} from '../util/resize';
-
-
-const DEFAULT_COLUMN_FLEX = new Immutable.List(['1', '1', '1']);
-const DEFAULT_ROW_FLEX = new Immutable.List(['1', '1']);
 export const DEFAULT_WORKSPACE = new Immutable.Map({
-  columnFlex: DEFAULT_COLUMN_FLEX,
-  rowFlex: DEFAULT_ROW_FLEX,
   isDraggingColumnDivider: false,
   isEditingInstructions: false,
 });
@@ -59,13 +49,6 @@ export default function ui(stateIn, action) {
     case 'PROJECT_CREATED':
       return state.set('workspace', DEFAULT_WORKSPACE);
 
-    case 'HIDE_COMPONENT':
-    case 'UNHIDE_COMPONENT':
-      if (action.payload.componentName === 'output') {
-        return state.setIn(['workspace', 'rowFlex'], DEFAULT_ROW_FLEX);
-      }
-      return state.setIn(['workspace', 'columnFlex'], DEFAULT_COLUMN_FLEX);
-
     case 'UPDATE_PROJECT_SOURCE':
       return state.setIn(['editors', 'typing'], true);
 
@@ -92,18 +75,6 @@ export default function ui(stateIn, action) {
 
     case 'EDITOR_FOCUSED_REQUESTED_LINE':
       return state.setIn(['editors', 'requestedFocusedLine'], null);
-
-    case 'DRAG_ROW_DIVIDER':
-      return state.updateIn(['workspace', 'columnFlex'], (prevFlex) => {
-        const newFlex = updateEditorColumnFlex(action.payload);
-        return newFlex ? Immutable.fromJS(newFlex) : prevFlex;
-      });
-
-    case 'DRAG_COLUMN_DIVIDER':
-      return state.updateIn(['workspace', 'rowFlex'], (prevFlex) => {
-        const newFlex = updateWorkspaceRowFlex(action.payload);
-        return newFlex ? Immutable.fromJS(newFlex) : prevFlex;
-      });
 
     case 'START_DRAG_COLUMN_DIVIDER':
       return state.setIn(['workspace', 'isDraggingColumnDivider'], true);
@@ -145,6 +116,7 @@ export default function ui(stateIn, action) {
       );
 
     case 'USER_LOGGED_OUT':
+    case 'LINK_GITHUB_IDENTITY':
       return state.updateIn(
         ['topBar', 'openMenu'],
         menu => menu === 'currentUser' ? null : menu,
@@ -235,6 +207,18 @@ export default function ui(stateIn, action) {
 
     case 'HIDE_SAVE_INDICATOR':
       return state.set('saveIndicatorShown', false);
+
+    case 'IDENTITY_LINKED': {
+      return addNotification(
+        state,
+        'identity-linked',
+        'notice',
+        {provider: action.payload.credential.providerId},
+      );
+    }
+
+    case 'LINK_IDENTITY_FAILED':
+      return addNotification(state, 'link-identity-failed', 'error');
 
     default:
       return state;
